@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D2L Chatbot | 规则管理系统</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="page-container">
+    <!-- Navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-robot me-2"></i>D2L Chatbot
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="fas fa-comments me-1"></i>Chat
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/manage-rules">
+                <i class="fas fa-cogs me-1"></i>Manage Rules
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/test-database">
+                <i class="fas fa-database me-1"></i>Test Database
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="content-container">
+      <div class="mb-4">
+        <h1 class="display-5 mb-0">
+          <i class="fas fa-cogs me-2"></i>规则管理系统
+        </h1>
+        <p class="text-muted">管理聊天机器人的响应规则，自定义关键词和回复内容</p>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <!-- Rule Stats -->
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="fas fa-chart-bar me-2"></i>规则统计
+              </h5>
+              <button id="refreshStats" class="btn btn-sm btn-primary">
+                <i class="fas fa-sync-alt me-1"></i>刷新
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row" id="ruleStats">
+                <div class="col-md-2 col-sm-4 mb-3">
+                  <div class="stats-card">
+                    <div class="stats-value" id="totalRules">0</div>
+                    <div class="stats-label">总规则数</div>
+                  </div>
+                </div>
+                <div class="col-md-2 col-sm-4 mb-3">
+                  <div class="stats-card">
+                    <div class="stats-value" id="activeRules">0</div>
+                    <div class="stats-label">活跃规则</div>
+                  </div>
+                </div>
+                <div class="col-md-2 col-sm-4 mb-3">
+                  <div class="stats-card">
+                    <div class="stats-value" id="customRules">0</div>
+                    <div class="stats-label">自定义规则</div>
+                  </div>
+                </div>
+                <div class="col-md-2 col-sm-4 mb-3">
+                  <div class="stats-card">
+                    <div class="stats-value" id="keywordRules">0</div>
+                    <div class="stats-label">关键词规则</div>
+                  </div>
+                </div>
+                <div class="col-md-2 col-sm-4 mb-3">
+                  <div class="stats-card">
+                    <div class="stats-value" id="regexRules">0</div>
+                    <div class="stats-label">正则规则</div>
+                  </div>
+                </div>
+                <div class="col-md-2 col-sm-4 mb-3">
+                  <div class="stats-card">
+                    <div class="stats-value" id="functionRules">0</div>
+                    <div class="stats-label">函数规则</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rule creation form -->
+          <div class="card mb-4 rule-form">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-plus-circle me-2"></i>添加新规则
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="ruleForm">
+                <div class="mb-4">
+                  <label for="fullPatternInput" class="form-label">完整规则模式</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">
+                      <i class="fas fa-magic text-primary"></i>
+                    </span>
+                    <input type="text" class="form-control" id="fullPatternInput" placeholder="当用户输入关键词（keyword1,keyword2）括号中，机器人应该回复（response）">
+                  </div>
+                  <div class="form-text">使用这种格式可以快速定义规则，或者使用下方的各个字段</div>
+                </div>
+                <hr>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="keywordsInput" class="form-label">关键词 (逗号分隔)</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light">
+                        <i class="fas fa-key text-primary"></i>
+                      </span>
+                      <input type="text" class="form-control" id="keywordsInput" placeholder="输入关键词，用逗号分隔">
+                    </div>
+                    <div class="form-text">聊天机器人会在用户消息中查找这些关键词，匹配到任何一个都会触发回复</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="priorityInput" class="form-label">优先级</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light">
+                        <i class="fas fa-sort-amount-up text-primary"></i>
+                      </span>
+                      <input type="number" class="form-control" id="priorityInput" value="0" min="0">
+                    </div>
+                    <div class="form-text">数值越大优先级越高，高优先级的规则会先匹配 (默认: 0)</div>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="responseInput" class="form-label">机器人回复</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">
+                      <i class="fas fa-robot text-primary"></i>
+                    </span>
+                    <textarea class="form-control" id="responseInput" rows="3" placeholder="输入机器人的回复内容"></textarea>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <button type="reset" class="btn btn-secondary me-2">
+                    <i class="fas fa-undo me-1"></i>重置
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i>添加规则
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Rule filtering options -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-filter me-2"></i>筛选规则
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-3 mb-3">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="showInactiveRules">
+                    <label class="form-check-label" for="showInactiveRules">显示未激活规则</label>
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="showBuiltinRules">
+                    <label class="form-check-label" for="showBuiltinRules">显示内置规则</label>
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <select class="form-select" id="ruleTypeFilter">
+                    <option value="">所有类型</option>
+                    <option value="keyword">关键词规则</option>
+                    <option value="regex">正则表达式规则</option>
+                    <option value="function">函数规则</option>
+                  </select>
+                </div>
+                <div class="col-md-3 mb-3 text-end">
+                  <button class="btn btn-primary" id="refreshRules">
+                    <i class="fas fa-sync-alt me-1"></i>刷新规则
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rule list -->
+          <h3 class="mb-3">
+            <i class="fas fa-list me-2"></i>规则列表
+          </h3>
+          <div id="rulesList" class="row">
+            <div class="col-12 text-center py-5">
+              <div class="loading mx-auto"></div>
+              <p class="mt-3 text-muted">加载规则中...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Rule Modal -->
+  <div class="modal fade" id="editRuleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-edit me-2"></i>编辑规则
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editRuleForm">
+            <input type="hidden" id="editRuleId">
+            <div class="row mb-3">
+              <div class="col-md-8">
+                <label for="editKeywords" class="form-label">关键词 (逗号分隔)</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light">
+                    <i class="fas fa-key text-primary"></i>
+                  </span>
+                  <input type="text" class="form-control" id="editKeywords">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label for="editPriority" class="form-label">优先级</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light">
+                    <i class="fas fa-sort-amount-up text-primary"></i>
+                  </span>
+                  <input type="number" class="form-control" id="editPriority" min="0">
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editResponse" class="form-label">机器人回复</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light">
+                  <i class="fas fa-robot text-primary"></i>
+                </span>
+                <textarea class="form-control" id="editResponse" rows="4"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>取消
+          </button>
+          <button type="button" class="btn btn-primary" id="saveRuleChanges">
+            <i class="fas fa-save me-1"></i>保存更改
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-exclamation-triangle me-2"></i>确认删除
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>您确定要删除这条规则吗？此操作不可撤销。</p>
+          <div class="alert alert-warning">
+            <i class="fas fa-info-circle me-2"></i>规则ID: <span id="deleteRuleId"></span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>取消
+          </button>
+          <button type="button" class="btn btn-danger" id="confirmDelete">
+            <i class="fas fa-trash-alt me-1"></i>确认删除
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // DOM Elements
+    const ruleForm = document.getElementById('ruleForm');
+    const fullPatternInput = document.getElementById('fullPatternInput');
+    const keywordsInput = document.getElementById('keywordsInput');
+    const responseInput = document.getElementById('responseInput');
+    const priorityInput = document.getElementById('priorityInput');
+    const rulesList = document.getElementById('rulesList');
+    
+    const showInactiveRules = document.getElementById('showInactiveRules');
+    const showBuiltinRules = document.getElementById('showBuiltinRules');
+    const ruleTypeFilter = document.getElementById('ruleTypeFilter');
+    const refreshRules = document.getElementById('refreshRules');
+    const refreshStats = document.getElementById('refreshStats');
+    
+    // Parse full pattern
+    fullPatternInput.addEventListener('blur', () => {
+      const fullPattern = fullPatternInput.value.trim();
+      if (fullPattern && fullPattern.includes('当用户输入关键词（') && fullPattern.includes('）') && 
+          fullPattern.includes('机器人应该回复（') && fullPattern.includes('）')) {
+        
+        // Extract keywords and response
+        const regex = /当用户输入关键词（(.+?)）.*?机器人应该回复（(.+?)）/;
+        const match = fullPattern.match(regex);
+        
+        if (match) {
+          keywordsInput.value = match[1];
+          responseInput.value = match[2];
+        }
+      }
+    });
+    
+    // Modal Elements
+    const editRuleModal = new bootstrap.Modal(document.getElementById('editRuleModal'));
+    const editRuleId = document.getElementById('editRuleId');
+    const editKeywords = document.getElementById('editKeywords');
+    const editResponse = document.getElementById('editResponse');
+    const editPriority = document.getElementById('editPriority');
+    const saveRuleChanges = document.getElementById('saveRuleChanges');
+    
+    const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    const deleteRuleId = document.getElementById('deleteRuleId');
+    const confirmDelete = document.getElementById('confirmDelete');
+    
+    // Load rule statistics
+    async function loadRuleStats() {
+      try {
+        const response = await fetch('/api/rules/stats');
+        const data = await response.json();
+        
+        if (data.stats) {
+          const stats = data.stats;
+          document.getElementById('totalRules').textContent = stats.total;
+          document.getElementById('activeRules').textContent = stats.active_count;
+          document.getElementById('customRules').textContent = stats.custom_count;
+          document.getElementById('keywordRules').textContent = stats.keyword_count;
+          document.getElementById('regexRules').textContent = stats.regex_count;
+          document.getElementById('functionRules').textContent = stats.function_count;
+        }
+      } catch (error) {
+        console.error('Error loading rule stats:', error);
+        showToast('错误', '加载规则统计失败', 'danger');
+      }
+    }
+    
+    // Load and render rules
+    async function loadRules() {
+      rulesList.innerHTML = `
+        <div class="col-12 text-center py-5">
+          <div class="loading mx-auto"></div>
+          <p class="mt-3 text-muted">加载规则中...</p>
+        </div>
+      `;
+      
+      try {
+        const includeInactive = showInactiveRules.checked;
+        const showBuiltin = showBuiltinRules.checked;
+        const ruleType = ruleTypeFilter.value;
+        
+        let url = `/api/rules?include_inactive=${includeInactive}`;
+        
+        if (!showBuiltin) {
+          url += '&only_custom=true';
+        }
+        
+        if (ruleType) {
+          url += `&type=${ruleType}`;
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        rulesList.innerHTML = '';
+        
+        if (data.rules && data.rules.length > 0) {
+          data.rules.forEach(rule => {
+            const ruleCard = document.createElement('div');
+            ruleCard.className = 'col-lg-6 col-md-12 mb-3';
+            
+            let ruleContent = '';
+            let ruleTypeIcon = '';
+            let ruleTypeBadge = '';
+            
+            // For keyword rules
+            if (rule.rule_type === 'keyword') {
+              ruleTypeIcon = '<i class="fas fa-key text-primary me-2"></i>';
+              ruleTypeBadge = '<span class="badge badge-primary">关键词</span>';
+              ruleContent = `
+                <h6 class="card-subtitle mb-2 text-muted">匹配关键词</h6>
+                <p class="card-text keywords">${rule.keywords || '无关键词'}</p>
+              `;
+            }
+            // For regex rules
+            else if (rule.rule_type === 'regex') {
+              ruleTypeIcon = '<i class="fas fa-code text-success me-2"></i>';
+              ruleTypeBadge = '<span class="badge badge-success">正则表达式</span>';
+              ruleContent = `
+                <h6 class="card-subtitle mb-2 text-muted">正则表达式</h6>
+                <p class="card-text pattern"><code>${rule.pattern || '无模式'}</code></p>
+              `;
+            }
+            // For function rules
+            else if (rule.rule_type === 'function') {
+              ruleTypeIcon = '<i class="fas fa-function text-warning me-2"></i>';
+              ruleTypeBadge = '<span class="badge badge-secondary">函数</span>';
+              ruleContent = `
+                <h6 class="card-subtitle mb-2 text-muted">函数处理</h6>
+                <p class="card-text function"><code>${rule.function_name || '无函数'}</code></p>
+              `;
+            }
+            
+            ruleCard.innerHTML = `
+              <div class="card rule-card ${rule.is_active ? '' : 'rule-inactive'}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <div>
+                    ${ruleTypeIcon}规则 #${rule.id}
+                    ${rule.is_builtin ? '<span class="badge badge-primary ms-2">内置</span>' : ''}
+                    ${ruleTypeBadge}
+                  </div>
+                  <div>
+                    ${!rule.is_builtin ? `
+                      <button class="btn btn-sm btn-outline-primary edit-rule" data-id="${rule.id}" title="编辑规则">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger delete-rule" data-id="${rule.id}" title="删除规则">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    ` : `
+                      <span class="badge badge-secondary">不可编辑</span>
+                    `}
+                  </div>
+                </div>
+                <div class="card-body">
+                  ${ruleContent}
+                  <h6 class="card-subtitle mb-2 text-muted">回复内容</h6>
+                  <p class="card-text response">${rule.response}</p>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input rule-active-toggle" type="checkbox" data-id="${rule.id}" 
+                           ${rule.is_active ? 'checked' : ''} ${rule.is_builtin ? 'disabled' : ''}>
+                    <label class="form-check-label">活跃状态</label>
+                  </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                  <span>优先级: <span class="priority badge bg-secondary">${rule.priority}</span></span>
+                  <small class="text-muted">类型: ${rule.rule_type}</small>
+                </div>
+              </div>
+            `;
+            
+            rulesList.appendChild(ruleCard);
+          });
+        } else {
+          rulesList.innerHTML = `
+            <div class="col-12">
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>没有找到符合条件的规则。创建您的第一条规则吧！
+              </div>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading rules:', error);
+        rulesList.innerHTML = `
+          <div class="col-12">
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle me-2"></i>加载规则失败: ${error.message}
+            </div>
+          </div>
+        `;
+      }
+    }
+    
+    // Add new rule
+    ruleForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const fullPattern = fullPatternInput.value.trim();
+      const keywords = keywordsInput.value.trim();
+      const response = responseInput.value.trim();
+      const priority = parseInt(priorityInput.value) || 0;
+      
+      if ((!keywords || !response) && !fullPattern) {
+        showToast('警告', '请提供完整的规则格式或填写关键词和回复内容', 'warning');
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/rules', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            full_pattern: fullPattern,
+            keywords,
+            response,
+            priority
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          // Reset form
+          ruleForm.reset();
+          // Reload rules
+          loadRules();
+          // Reload stats
+          loadRuleStats();
+          showToast('成功', '规则添加成功！', 'success');
+        } else {
+          showToast('错误', `添加规则失败: ${data.error}`, 'danger');
+        }
+      } catch (err) {
+        console.error('Error adding rule:', err);
+        showToast('错误', '添加规则失败，请重试', 'danger');
+      }
+    });
+    
+    // Delete rule
+    document.addEventListener('click', async (e) => {
+      if (e.target.classList.contains('delete-rule') || 
+          e.target.parentElement.classList.contains('delete-rule')) {
+        
+        const button = e.target.classList.contains('delete-rule') ? 
+                      e.target : e.target.parentElement;
+        
+        const ruleId = button.getAttribute('data-id');
+        deleteRuleId.textContent = ruleId;
+        
+        // Show delete confirmation modal
+        deleteConfirmModal.show();
+        
+        // Set up confirm button handler
+        confirmDelete.onclick = async () => {
+          try {
+            const res = await fetch(`/api/rules/${ruleId}`, {
+              method: 'DELETE'
+            });
+            
+            const data = await res.json();
+            
+            deleteConfirmModal.hide();
+            
+            if (data.success) {
+              loadRules();
+              loadRuleStats();
+              showToast('成功', '规则删除成功', 'success');
+            } else {
+              showToast('错误', `删除规则失败: ${data.error}`, 'danger');
+            }
+          } catch (err) {
+            console.error('Error deleting rule:', err);
+            deleteConfirmModal.hide();
+            showToast('错误', '删除规则失败，请重试', 'danger');
+          }
+        };
+      }
+    });
+    
+    // Toggle rule active state
+    document.addEventListener('change', async (e) => {
+      if (e.target.classList.contains('rule-active-toggle')) {
+        const ruleId = e.target.getAttribute('data-id');
+        const isActive = e.target.checked;
+        
+        try {
+          const res = await fetch(`/api/rules/${ruleId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              is_active: isActive
+            })
+          });
+          
+          const data = await res.json();
+          
+          if (data.success) {
+            // Update card appearance
+            const card = e.target.closest('.rule-card');
+            if (isActive) {
+              card.classList.remove('rule-inactive');
+            } else {
+              card.classList.add('rule-inactive');
+            }
+            // Update rule stats
+            loadRuleStats();
+            showToast('成功', `规则已${isActive ? '激活' : '禁用'}`, 'success');
+          } else {
+            showToast('错误', `更新规则失败: ${data.error}`, 'danger');
+            // Reset checkbox to previous state
+            e.target.checked = !isActive;
+          }
+        } catch (err) {
+          console.error('Error updating rule:', err);
+          showToast('错误', '更新规则失败，请重试', 'danger');
+          // Reset checkbox to previous state
+          e.target.checked = !isActive;
+        }
+      }
+    });
+    
+    // Open edit modal
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('edit-rule') || 
+          e.target.parentElement.classList.contains('edit-rule')) {
+        
+        const button = e.target.classList.contains('edit-rule') ? 
+                      e.target : e.target.parentElement;
+                      
+        const ruleId = button.getAttribute('data-id');
+        const card = button.closest('.card');
+        
+        // Get current values
+        const keywordsElement = card.querySelector('.keywords');
+        const responseElement = card.querySelector('.response');
+        const priorityElement = card.querySelector('.priority');
+        
+        if (keywordsElement && responseElement && priorityElement) {
+          const keywords = keywordsElement.textContent;
+          const response = responseElement.textContent;
+          const priority = priorityElement.textContent;
+          
+          // Fill edit form
+          editRuleId.value = ruleId;
+          editKeywords.value = keywords;
+          editResponse.value = response;
+          editPriority.value = priority;
+          
+          // Show modal
+          editRuleModal.show();
+        }
+      }
+    });
+    
+    // Save edited rule
+    saveRuleChanges.addEventListener('click', async () => {
+      const ruleId = editRuleId.value;
+      const keywords = editKeywords.value.trim();
+      const response = editResponse.value.trim();
+      const priority = parseInt(editPriority.value) || 0;
+      
+      if (!keywords || !response) {
+        showToast('警告', '请填写关键词和回复内容', 'warning');
+        return;
+      }
+      
+      try {
+        const res = await fetch(`/api/rules/${ruleId}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            keywords,
+            response,
+            priority
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          // Hide modal
+          editRuleModal.hide();
+          // Reload rules
+          loadRules();
+          showToast('成功', '规则更新成功', 'success');
+        } else {
+          showToast('错误', `更新规则失败: ${data.error}`, 'danger');
+        }
+      } catch (err) {
+        console.error('Error updating rule:', err);
+        showToast('错误', '更新规则失败，请重试', 'danger');
+      }
+    });
+    
+    // Filter and refresh event handlers
+    showInactiveRules.addEventListener('change', loadRules);
+    showBuiltinRules.addEventListener('change', loadRules);
+    ruleTypeFilter.addEventListener('change', loadRules);
+    refreshRules.addEventListener('click', loadRules);
+    refreshStats.addEventListener('click', loadRuleStats);
+    
+    // Toast notification function
+    function showToast(title, message, type = 'info') {
+      // Check if toast container exists, if not create it
+      let toastContainer = document.querySelector('.toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+      }
+      
+      // Create toast element
+      const toastId = `toast-${Date.now()}`;
+      const toast = document.createElement('div');
+      toast.className = `toast align-items-center text-white bg-${type} border-0`;
+      toast.id = toastId;
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'assertive');
+      toast.setAttribute('aria-atomic', 'true');
+      
+      // Set toast content
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            <strong>${title}:</strong> ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      `;
+      
+      // Add toast to container
+      toastContainer.appendChild(toast);
+      
+      // Initialize and show toast
+      const toastInstance = new bootstrap.Toast(toast);
+      toastInstance.show();
+      
+      // Remove toast from DOM after it's hidden
+      toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+      });
+    }
+    
+    // Initial page load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadRules();
+      loadRuleStats();
+    });
+  </script>
+</body>
+</html>
