@@ -4,14 +4,16 @@
 """
 import os
 import re
-import sqlite3
 import time
-from flask import Flask, render_template, request, jsonify, send_from_directory, session, g
-from werkzeug.utils import secure_filename
 from uuid import uuid4
+
+from flask import Flask, render_template, request, jsonify, send_from_directory, session, g
+
+from werkzeug.utils import secure_filename
 
 import database
 from rules import RuleEngine
+
 
 # 测试反馈函数
 def log_status(message, is_success=True):

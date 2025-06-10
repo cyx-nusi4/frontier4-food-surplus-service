@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>D2L Chatbot | 规则管理系统</title>
+  <title>D2L Chatbot Rule Management</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,9 +52,11 @@
     <div class="content-container">
       <div class="mb-4">
         <h1 class="display-5 mb-0">
-          <i class="fas fa-cogs me-2"></i>规则管理系统
+          <i class="fas fa-cogs me-2"></i>Rule Management
         </h1>
-        <p class="text-muted">管理聊天机器人的响应规则，自定义关键词和回复内容</p>
+<!--        规则管理系统-->
+<!--        管理聊天机器人的响应规则，自定义关键词和回复内容-->
+        <p class="text-muted">Manage response rules, define customized keywords and replies.</p>
       </div>
 
       <div class="row">
@@ -63,10 +65,12 @@
           <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h5 class="mb-0">
-                <i class="fas fa-chart-bar me-2"></i>规则统计
+<!--                规则统计-->
+                <i class="fas fa-chart-bar me-2"></i>Rule statistics
               </h5>
               <button id="refreshStats" class="btn btn-sm btn-primary">
-                <i class="fas fa-sync-alt me-1"></i>刷新
+
+                <i class="fas fa-sync-alt me-1"></i>Refresh
               </button>
             </div>
             <div class="card-body">
@@ -74,37 +78,37 @@
                 <div class="col-md-2 col-sm-4 mb-3">
                   <div class="stats-card">
                     <div class="stats-value" id="totalRules">0</div>
-                    <div class="stats-label">总规则数</div>
+                    <div class="stats-label">Total number of rules</div>
                   </div>
                 </div>
                 <div class="col-md-2 col-sm-4 mb-3">
                   <div class="stats-card">
                     <div class="stats-value" id="activeRules">0</div>
-                    <div class="stats-label">活跃规则</div>
+                    <div class="stats-label">Active rules</div>
                   </div>
                 </div>
                 <div class="col-md-2 col-sm-4 mb-3">
                   <div class="stats-card">
                     <div class="stats-value" id="customRules">0</div>
-                    <div class="stats-label">自定义规则</div>
+                    <div class="stats-label">Self-defined rules</div>
                   </div>
                 </div>
                 <div class="col-md-2 col-sm-4 mb-3">
                   <div class="stats-card">
                     <div class="stats-value" id="keywordRules">0</div>
-                    <div class="stats-label">关键词规则</div>
+                    <div class="stats-label">Keyword rules</div>
                   </div>
                 </div>
                 <div class="col-md-2 col-sm-4 mb-3">
                   <div class="stats-card">
                     <div class="stats-value" id="regexRules">0</div>
-                    <div class="stats-label">正则规则</div>
+                    <div class="stats-label">Regex rules</div>
                   </div>
                 </div>
                 <div class="col-md-2 col-sm-4 mb-3">
                   <div class="stats-card">
                     <div class="stats-value" id="functionRules">0</div>
-                    <div class="stats-label">函数规则</div>
+                    <div class="stats-label">Function rules</div>
                   </div>
                 </div>
               </div>
@@ -115,59 +119,61 @@
           <div class="card mb-4 rule-form">
             <div class="card-header">
               <h5 class="mb-0">
-                <i class="fas fa-plus-circle me-2"></i>添加新规则
+                <i class="fas fa-plus-circle me-2"></i>Add new rules
               </h5>
             </div>
             <div class="card-body">
               <form id="ruleForm">
                 <div class="mb-4">
-                  <label for="fullPatternInput" class="form-label">完整规则模式</label>
+                  <label for="fullPatternInput" class="form-label">Input full pattern</label>
                   <div class="input-group">
                     <span class="input-group-text bg-light">
                       <i class="fas fa-magic text-primary"></i>
                     </span>
-                    <input type="text" class="form-control" id="fullPatternInput" placeholder="当用户输入关键词（keyword1,keyword2）括号中，机器人应该回复（response）">
+                    <input type="text" class="form-control" id="fullPatternInput" placeholder="When user type in（keyword1,keyword2，the bot should respond（response）">
                   </div>
-                  <div class="form-text">使用这种格式可以快速定义规则，或者使用下方的各个字段</div>
+                  <div class="form-text">Use this form to quickly define rules, or fill in following fields.</div>
                 </div>
                 <hr>
                 <div class="row mb-3">
                   <div class="col-md-6">
-                    <label for="keywordsInput" class="form-label">关键词 (逗号分隔)</label>
+                    <label for="keywordsInput" class="form-label">keywords (comma separated)</label>
                     <div class="input-group">
                       <span class="input-group-text bg-light">
                         <i class="fas fa-key text-primary"></i>
                       </span>
-                      <input type="text" class="form-control" id="keywordsInput" placeholder="输入关键词，用逗号分隔">
+                      <input type="text" class="form-control" id="keywordsInput" placeholder="Please type in keywords, seperated by comma">
                     </div>
-                    <div class="form-text">聊天机器人会在用户消息中查找这些关键词，匹配到任何一个都会触发回复</div>
+<!--                    聊天机器人会在用户消息中查找这些关键词，匹配到任何一个都会触发回复-->
+                    <div class="form-text">The chatbot would try to search for keywords in conversation, every match would trigger the response.</div>
                   </div>
                   <div class="col-md-6">
-                    <label for="priorityInput" class="form-label">优先级</label>
+                    <label for="priorityInput" class="form-label">Priority</label>
                     <div class="input-group">
                       <span class="input-group-text bg-light">
                         <i class="fas fa-sort-amount-up text-primary"></i>
                       </span>
                       <input type="number" class="form-control" id="priorityInput" value="0" min="0">
                     </div>
-                    <div class="form-text">数值越大优先级越高，高优先级的规则会先匹配 (默认: 0)</div>
+<!--                    数值越大优先级越高，高优先级的规则会先匹配 (默认: 0)-->
+                    <div class="form-text">The higher the number, the rule will be prioritized to match.</div>
                   </div>
                 </div>
                 <div class="mb-3">
-                  <label for="responseInput" class="form-label">机器人回复</label>
+                  <label for="responseInput" class="form-label">Bot response</label>
                   <div class="input-group">
                     <span class="input-group-text bg-light">
                       <i class="fas fa-robot text-primary"></i>
                     </span>
-                    <textarea class="form-control" id="responseInput" rows="3" placeholder="输入机器人的回复内容"></textarea>
+                    <textarea class="form-control" id="responseInput" rows="3" placeholder="Please type in the response"></textarea>
                   </div>
                 </div>
                 <div class="text-end">
                   <button type="reset" class="btn btn-secondary me-2">
-                    <i class="fas fa-undo me-1"></i>重置
+                    <i class="fas fa-undo me-1"></i>Reset
                   </button>
                   <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-plus-circle me-1"></i>添加规则
+                    <i class="fas fa-plus-circle me-1"></i>Add rule
                   </button>
                 </div>
               </form>
@@ -178,7 +184,7 @@
           <div class="card mb-4">
             <div class="card-header">
               <h5 class="mb-0">
-                <i class="fas fa-filter me-2"></i>筛选规则
+                <i class="fas fa-filter me-2"></i>Filter rules
               </h5>
             </div>
             <div class="card-body">
@@ -186,26 +192,26 @@
                 <div class="col-md-3 mb-3">
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="showInactiveRules">
-                    <label class="form-check-label" for="showInactiveRules">显示未激活规则</label>
+                    <label class="form-check-label" for="showInactiveRules">Display inactive rules</label>
                   </div>
                 </div>
                 <div class="col-md-3 mb-3">
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="showBuiltinRules">
-                    <label class="form-check-label" for="showBuiltinRules">显示内置规则</label>
+                    <label class="form-check-label" for="showBuiltinRules">Display builtin rules</label>
                   </div>
                 </div>
                 <div class="col-md-3 mb-3">
                   <select class="form-select" id="ruleTypeFilter">
-                    <option value="">所有类型</option>
-                    <option value="keyword">关键词规则</option>
-                    <option value="regex">正则表达式规则</option>
-                    <option value="function">函数规则</option>
+                    <option value="">All types</option>
+                    <option value="keyword">Keyword rules</option>
+                    <option value="regex">Regexp rules</option>
+                    <option value="function">Function rules</option>
                   </select>
                 </div>
                 <div class="col-md-3 mb-3 text-end">
                   <button class="btn btn-primary" id="refreshRules">
-                    <i class="fas fa-sync-alt me-1"></i>刷新规则
+                    <i class="fas fa-sync-alt me-1"></i>Refresh rules
                   </button>
                 </div>
               </div>
@@ -214,12 +220,12 @@
 
           <!-- Rule list -->
           <h3 class="mb-3">
-            <i class="fas fa-list me-2"></i>规则列表
+            <i class="fas fa-list me-2"></i>Rule list
           </h3>
           <div id="rulesList" class="row">
             <div class="col-12 text-center py-5">
               <div class="loading mx-auto"></div>
-              <p class="mt-3 text-muted">加载规则中...</p>
+              <p class="mt-3 text-muted">Loading rules...</p>
             </div>
           </div>
         </div>
@@ -233,7 +239,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">
-            <i class="fas fa-edit me-2"></i>编辑规则
+            <i class="fas fa-edit me-2"></i>Edit rules
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -242,7 +248,7 @@
             <input type="hidden" id="editRuleId">
             <div class="row mb-3">
               <div class="col-md-8">
-                <label for="editKeywords" class="form-label">关键词 (逗号分隔)</label>
+                <label for="editKeywords" class="form-label">Keywords</label>
                 <div class="input-group">
                   <span class="input-group-text bg-light">
                     <i class="fas fa-key text-primary"></i>
@@ -251,7 +257,7 @@
                 </div>
               </div>
               <div class="col-md-4">
-                <label for="editPriority" class="form-label">优先级</label>
+                <label for="editPriority" class="form-label">Priority</label>
                 <div class="input-group">
                   <span class="input-group-text bg-light">
                     <i class="fas fa-sort-amount-up text-primary"></i>
@@ -261,7 +267,7 @@
               </div>
             </div>
             <div class="mb-3">
-              <label for="editResponse" class="form-label">机器人回复</label>
+              <label for="editResponse" class="form-label">Bot response</label>
               <div class="input-group">
                 <span class="input-group-text bg-light">
                   <i class="fas fa-robot text-primary"></i>
@@ -273,10 +279,10 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="fas fa-times me-1"></i>取消
+            <i class="fas fa-times me-1"></i>Cancel
           </button>
           <button type="button" class="btn btn-primary" id="saveRuleChanges">
-            <i class="fas fa-save me-1"></i>保存更改
+            <i class="fas fa-save me-1"></i>Save
           </button>
         </div>
       </div>
@@ -289,22 +295,23 @@
       <div class="modal-content">
         <div class="modal-header bg-danger text-white">
           <h5 class="modal-title">
-            <i class="fas fa-exclamation-triangle me-2"></i>确认删除
+            <i class="fas fa-exclamation-triangle me-2"></i>Confirm deletion
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>您确定要删除这条规则吗？此操作不可撤销。</p>
+<!--          您确定要删除这条规则吗？此操作不可撤销。-->
+          <p>Are you sure deleting this rule?</p>
           <div class="alert alert-warning">
             <i class="fas fa-info-circle me-2"></i>规则ID: <span id="deleteRuleId"></span>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="fas fa-times me-1"></i>取消
+            <i class="fas fa-times me-1"></i>Cancel
           </button>
           <button type="button" class="btn btn-danger" id="confirmDelete">
-            <i class="fas fa-trash-alt me-1"></i>确认删除
+            <i class="fas fa-trash-alt me-1"></i>Confirm
           </button>
         </div>
       </div>
