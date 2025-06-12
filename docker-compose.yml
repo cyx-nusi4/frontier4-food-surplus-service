@@ -1,0 +1,21 @@
+version: "3.8"
+name: chatbot
+
+services:
+  management_platform:
+    build: ./chatbot_management_platform
+    ports:
+      - "80:5000"   # Expose Flask on port 80
+    networks:
+      - chatbot_network
+
+  telegram:
+    build: ./telegram_chatbot
+    depends_on:
+      - management_platform
+    networks:
+      - chatbot_network
+
+networks:
+  chatbot_network:
+    driver: bridge

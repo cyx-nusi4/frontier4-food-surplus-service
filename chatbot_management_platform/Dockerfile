@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copy the backend code
-COPY . /
+COPY .. /
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt

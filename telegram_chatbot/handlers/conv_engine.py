@@ -12,7 +12,8 @@ from telegram.ext import (
 )
 
 logging.basicConfig(level=logging.INFO)
-conv_api = "http://127.0.0.1:5000/api/chat"
+# conv_api = "http://127.0.0.1:5000/api/chat"
+conv_api = "http://management_platform:5000/api/chat"
 
 Prompt = 1
 
