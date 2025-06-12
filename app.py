@@ -668,5 +668,5 @@ def api_self_test():
 # 应用启动
 if __name__ == '__main__':
     log_status("应用启动中...")
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', debug=True, port=5000)
     log_status("应用已停止")
