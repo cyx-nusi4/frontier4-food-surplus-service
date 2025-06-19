@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
@@ -7,6 +8,7 @@ from handlers.mention import handle_mention
 from handlers.conversation import conv_handler
 from handlers.conv_engine import question_handler
 
+load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 def main():
