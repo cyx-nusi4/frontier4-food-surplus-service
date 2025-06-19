@@ -7,7 +7,7 @@ from handlers.mention import handle_mention
 from handlers.conversation import conv_handler
 from handlers.conv_engine import question_handler
 
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7553369270:AAHbqG8JXRpDeyCfzuBD5drrfdKnWODljlQ")
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 def main():
     application = Application.builder().token(TOKEN).build()

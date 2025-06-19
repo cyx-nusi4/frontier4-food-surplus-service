@@ -62,7 +62,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 question_handler = ConversationHandler(
-        entry_points=[CommandHandler("ask2", conv_start)],
+        entry_points=[CommandHandler("ask", conv_start)],
         states={
             Prompt: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_prompt)],
         },
