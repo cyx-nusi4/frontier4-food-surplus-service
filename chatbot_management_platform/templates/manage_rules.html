@@ -428,26 +428,26 @@
               ruleTypeIcon = '<i class="fas fa-key text-primary me-2"></i>';
               ruleTypeBadge = '<span class="badge badge-primary">关键词</span>';
               ruleContent = `
-                <h6 class="card-subtitle mb-2 text-muted">匹配关键词</h6>
-                <p class="card-text keywords">${rule.keywords || '无关键词'}</p>
+                <h6 class="card-subtitle mb-2 text-muted">Keywords</h6>
+                <p class="card-text keywords">${rule.keywords || 'No keyword'}</p>
               `;
             }
             // For regex rules
             else if (rule.rule_type === 'regex') {
               ruleTypeIcon = '<i class="fas fa-code text-success me-2"></i>';
-              ruleTypeBadge = '<span class="badge badge-success">正则表达式</span>';
+              ruleTypeBadge = '<span class="badge badge-success">RegExp</span>';
               ruleContent = `
-                <h6 class="card-subtitle mb-2 text-muted">正则表达式</h6>
-                <p class="card-text pattern"><code>${rule.pattern || '无模式'}</code></p>
+                <h6 class="card-subtitle mb-2 text-muted">RegExp</h6>
+                <p class="card-text pattern"><code>${rule.pattern || 'No pattern'}</code></p>
               `;
             }
             // For function rules
             else if (rule.rule_type === 'function') {
               ruleTypeIcon = '<i class="fas fa-function text-warning me-2"></i>';
-              ruleTypeBadge = '<span class="badge badge-secondary">函数</span>';
+              ruleTypeBadge = '<span class="badge badge-secondary">Functions</span>';
               ruleContent = `
-                <h6 class="card-subtitle mb-2 text-muted">函数处理</h6>
-                <p class="card-text function"><code>${rule.function_name || '无函数'}</code></p>
+                <h6 class="card-subtitle mb-2 text-muted">Functions</h6>
+                <p class="card-text function"><code>${rule.function_name || 'no function'}</code></p>
               `;
             }
             
@@ -455,36 +455,36 @@
               <div class="card rule-card ${rule.is_active ? '' : 'rule-inactive'}">
                 <div class="card-header d-flex justify-content-between align-items-center">
                   <div>
-                    ${ruleTypeIcon}规则 #${rule.id}
-                    ${rule.is_builtin ? '<span class="badge badge-primary ms-2">内置</span>' : ''}
+                    ${ruleTypeIcon}Rules #${rule.id}
+                    ${rule.is_builtin ? '<span class="badge badge-primary ms-2">In-built</span>' : ''}
                     ${ruleTypeBadge}
                   </div>
                   <div>
                     ${!rule.is_builtin ? `
-                      <button class="btn btn-sm btn-outline-primary edit-rule" data-id="${rule.id}" title="编辑规则">
+                      <button class="btn btn-sm btn-outline-primary edit-rule" data-id="${rule.id}" title="Edit Rule">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-danger delete-rule" data-id="${rule.id}" title="删除规则">
+                      <button class="btn btn-sm btn-outline-danger delete-rule" data-id="${rule.id}" title="Delete Rule">
                         <i class="fas fa-trash-alt"></i>
                       </button>
                     ` : `
-                      <span class="badge badge-secondary">不可编辑</span>
+                      <span class="badge badge-secondary">Not editable</span>
                     `}
                   </div>
                 </div>
                 <div class="card-body">
                   ${ruleContent}
-                  <h6 class="card-subtitle mb-2 text-muted">回复内容</h6>
+                  <h6 class="card-subtitle mb-2 text-muted">Responses</h6>
                   <p class="card-text response">${rule.response}</p>
                   <div class="form-check form-switch">
                     <input class="form-check-input rule-active-toggle" type="checkbox" data-id="${rule.id}" 
                            ${rule.is_active ? 'checked' : ''} ${rule.is_builtin ? 'disabled' : ''}>
-                    <label class="form-check-label">活跃状态</label>
+                    <label class="form-check-label">Active</label>
                   </div>
                 </div>
                 <div class="card-footer d-flex justify-content-between align-items-center">
-                  <span>优先级: <span class="priority badge bg-secondary">${rule.priority}</span></span>
-                  <small class="text-muted">类型: ${rule.rule_type}</small>
+                  <span>Priority: <span class="priority badge bg-secondary">${rule.priority}</span></span>
+                  <small class="text-muted">Type: ${rule.rule_type}</small>
                 </div>
               </div>
             `;
@@ -505,7 +505,7 @@
         rulesList.innerHTML = `
           <div class="col-12">
             <div class="alert alert-danger">
-              <i class="fas fa-exclamation-triangle me-2"></i>加载规则失败: ${error.message}
+              <i class="fas fa-exclamation-triangle me-2"></i>Filed to load: ${error.message}
             </div>
           </div>
         `;
@@ -522,7 +522,7 @@
       const priority = parseInt(priorityInput.value) || 0;
       
       if ((!keywords || !response) && !fullPattern) {
-        showToast('警告', '请提供完整的规则格式或填写关键词和回复内容', 'warning');
+        showToast('Warning', 'Please provide complete keywords and responses', 'warning');
         return;
       }
       
@@ -547,13 +547,13 @@
           loadRules();
           // Reload stats
           loadRuleStats();
-          showToast('成功', '规则添加成功！', 'success');
+          showToast('Success', 'Rule added!', 'success');
         } else {
-          showToast('错误', `添加规则失败: ${data.error}`, 'danger');
+          showToast('Error', `Filed to add rule: ${data.error}`, 'danger');
         }
       } catch (err) {
         console.error('Error adding rule:', err);
-        showToast('错误', '添加规则失败，请重试', 'danger');
+        showToast('Error', 'Filed to add rule', 'danger');
       }
     });
     
@@ -585,14 +585,14 @@
             if (data.success) {
               loadRules();
               loadRuleStats();
-              showToast('成功', '规则删除成功', 'success');
+              showToast('Success', 'Rule deleted', 'success');
             } else {
-              showToast('错误', `删除规则失败: ${data.error}`, 'danger');
+              showToast('Error', `Failed to delete: ${data.error}`, 'danger');
             }
           } catch (err) {
             console.error('Error deleting rule:', err);
             deleteConfirmModal.hide();
-            showToast('错误', '删除规则失败，请重试', 'danger');
+            showToast('Error', 'Failed to delete', 'danger');
           }
         };
       }
@@ -625,15 +625,15 @@
             }
             // Update rule stats
             loadRuleStats();
-            showToast('成功', `规则已${isActive ? '激活' : '禁用'}`, 'success');
+            showToast('Success', `Rule has been ${isActive ? 'activated' : 'deactivated'}`, 'success');
           } else {
-            showToast('错误', `更新规则失败: ${data.error}`, 'danger');
+            showToast('Error', `Failed to update: ${data.error}`, 'danger');
             // Reset checkbox to previous state
             e.target.checked = !isActive;
           }
         } catch (err) {
           console.error('Error updating rule:', err);
-          showToast('错误', '更新规则失败，请重试', 'danger');
+          showToast('Error', 'Failed to update', 'danger');
           // Reset checkbox to previous state
           e.target.checked = !isActive;
         }
@@ -681,7 +681,7 @@
       const priority = parseInt(editPriority.value) || 0;
       
       if (!keywords || !response) {
-        showToast('警告', '请填写关键词和回复内容', 'warning');
+        showToast('Warning', 'Please type in keywords and responses', 'warning');
         return;
       }
       
@@ -703,13 +703,13 @@
           editRuleModal.hide();
           // Reload rules
           loadRules();
-          showToast('成功', '规则更新成功', 'success');
+          showToast('Success', 'Updated', 'success');
         } else {
-          showToast('错误', `更新规则失败: ${data.error}`, 'danger');
+          showToast('Error', `Failed to update: ${data.error}`, 'danger');
         }
       } catch (err) {
         console.error('Error updating rule:', err);
-        showToast('错误', '更新规则失败，请重试', 'danger');
+        showToast('Error', 'Failed to update', 'danger');
       }
     });
     
