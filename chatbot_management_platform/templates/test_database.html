@@ -1,60 +1,267 @@
-<!-- Main content -->
-<div class="content-container">
-  <div class="mb-4">
-    <h1 class="display-5 mb-0">
-      <i class="fas fa-database me-2"></i>Database Testing Tool
-    </h1>
-    <p class="text-muted">Test and query rules, messages, and file records in the database</p>
-  </div>
-
-  <div class="row">
-    <div class="col-md-6">
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            <i class="fas fa-chart-bar me-2"></i>Database Statistics
-          </h5>
-          <button id="refreshStats" class="btn btn-sm btn-primary">
-            <i class="fas fa-sync-alt me-1"></i>Refresh
-          </button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D2L Chatbot | Database Testing Tools</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- CodeMirror CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .CodeMirror {
+      height: auto;
+      min-height: 100px;
+      border-radius: var(--radius-md);
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 14px;
+    }
+    
+    .result-table {
+      overflow-x: auto;
+      background-color: white;
+      border-radius: var(--radius-md);
+    }
+    
+    .result-count {
+      background-color: var(--primary-light);
+      color: var(--primary-color);
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- Navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-robot me-2"></i>D2L Chatbot
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="fas fa-comments me-1"></i>Chat
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/manage-rules">
+                <i class="fas fa-cogs me-1"></i>Manage Rules
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/test-database">
+                <i class="fas fa-database me-1"></i>Test Database
+              </a>
+            </li>
+          </ul>
         </div>
-        <div class="card-body">
-          <div class="row" id="dbStats">
-            <div class="col-md-4 mb-3">
-              <div class="stats-card">
-                <div class="stats-value" id="totalRules">-</div>
-                <div class="stats-label">Total Rules</div>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="content-container">
+      <div class="mb-4">
+        <h1 class="display-5 mb-0">
+          <i class="fas fa-database me-2"></i>Database Testing Tools
+        </h1>
+        <p class="text-muted">Test and query rules, messages, and file records in the database</p>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="fas fa-chart-bar me-2"></i>Database Statistics
+              </h5>
+              <button id="refreshStats" class="btn btn-sm btn-primary">
+                <i class="fas fa-sync-alt me-1"></i>Refresh
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row" id="dbStats">
+                <div class="col-md-4 mb-3">
+                  <div class="stats-card">
+                    <div class="stats-value" id="totalRules">-</div>
+                    <div class="stats-label">规则总数</div>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <div class="stats-card">
+                    <div class="stats-value" id="totalSessions">-</div>
+                    <div class="stats-label">Total Conversations</div>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <div class="stats-card">
+                    <div class="stats-value" id="totalMessages">-</div>
+                    <div class="stats-label">Total Messages</div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="d-flex justify-content-between">
+                    <div>
+                      <h6 class="mb-2">Rule Type</h6>
+                      <ul class="list-unstyled">
+                        <li><i class="fas fa-key text-primary me-2"></i>Keywords Rules: <span id="keywordRules">-</span></li>
+                        <li><i class="fas fa-code text-success me-2"></i>RegExp Rules: <span id="regexRules">-</span></li>
+                        <li><i class="fas fa-function text-warning me-2"></i>Functional Rules: <span id="functionRules">-</span></li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h6 class="mb-2">Rule Attributes</h6>
+                      <ul class="list-unstyled">
+                        <li><i class="fas fa-bolt text-primary me-2"></i>In-built Rules: <span id="builtinRules">-</span></li>
+                        <li><i class="fas fa-user text-primary me-2"></i>Customized Rules: <span id="customRules">-</span></li>
+                        <li><i class="fas fa-check text-success me-2"></i>Active Rules: <span id="activeRules">-</span></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="col-md-4 mb-3">
-              <div class="stats-card">
-                <div class="stats-value" id="totalSessions">-</div>
-                <div class="stats-label">Total Sessions</div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-filter me-2"></i>Filters
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">Rule Type</label>
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-sm btn-outline-primary query-preset" data-sql="SELECT * FROM rules ORDER BY priority DESC, id ASC">
+                    All
+                  </button>
+                  <button class="btn btn-sm btn-outline-primary query-preset" data-sql="SELECT * FROM rules WHERE rule_type = 'keyword'">
+                    Keywords
+                  </button>
+                  <button class="btn btn-sm btn-outline-primary query-preset" data-sql="SELECT * FROM rules WHERE rule_type = 'regex'">
+                    RegExp
+                  </button>
+                  <button class="btn btn-sm btn-outline-primary query-preset" data-sql="SELECT * FROM rules WHERE rule_type = 'function'">
+                    Function
+                  </button>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Rule Type</label>
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-sm btn-outline-success query-preset" data-sql="SELECT * FROM rules WHERE is_builtin = 1">
+                    In-built Rules
+                  </button>
+                  <button class="btn btn-sm btn-outline-success query-preset" data-sql="SELECT * FROM rules WHERE is_builtin = 0">
+                    Customized Rules
+                  </button>
+                  <button class="btn btn-sm btn-outline-success query-preset" data-sql="SELECT * FROM rules WHERE is_active = 1">
+                    Active Rules
+                  </button>
+                  <button class="btn btn-sm btn-outline-success query-preset" data-sql="SELECT * FROM rules WHERE is_active = 0">
+                    Forbidden Rules
+                  </button>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Other Data</label>
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-sm btn-outline-info query-preset" data-sql="SELECT * FROM messages ORDER BY timestamp DESC LIMIT 20">
+                    Latest Messages
+                  </button>
+                  <button class="btn btn-sm btn-outline-info query-preset" data-sql="SELECT * FROM sessions ORDER BY last_activity DESC">
+                    Conversations
+                  </button>
+                  <button class="btn btn-sm btn-outline-info query-preset" data-sql="SELECT * FROM uploads ORDER BY upload_time DESC">
+                    Uploads
+                  </button>
+                </div>
               </div>
             </div>
-            <div class="col-md-4 mb-3">
-              <div class="stats-card">
-                <div class="stats-value" id="totalMessages">-</div>
-                <div class="stats-label">Total Messages</div>
-              </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-12">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-terminal me-2"></i>SQL Query Executor
+              </h5>
             </div>
-            <div class="col-12">
+            <div class="card-body">
+              <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>For advanced users only! Please be careful with SQL queries, especially with <code>DELETE</code> and <code>UPDATE</code> statements.
+              </div>
+              
+              <div class="mb-3">
+                <label for="sqlQuery" class="form-label">SQL Query</label>
+                <textarea id="sqlQuery" class="form-control"></textarea>
+              </div>
+              
               <div class="d-flex justify-content-between">
                 <div>
-                  <h6 class="mb-2">Rule Types</h6>
-                  <ul class="list-unstyled">
-                    <li><i class="fas fa-key text-primary me-2"></i>Keyword Rules: <span id="keywordRules">-</span></li>
-                    <li><i class="fas fa-code text-success me-2"></i>Regex Rules: <span id="regexRules">-</span></li>
-                    <li><i class="fas fa-function text-warning me-2"></i>Function Rules: <span id="functionRules">-</span></li>
-                  </ul>
+                  <button class="btn btn-secondary" id="loadSampleQueriesBtn">
+                    <i class="fas fa-list me-1"></i>Example Queries
+                  </button>
                 </div>
-                <div>
-                  <h6 class="mb-2">Rule Attributes</h6>
-                  <ul class="list-unstyled">
-                    <li><i class="fas fa-bolt text-primary me-2"></i>Built-in Rules: <span id="builtinRules">-</span></li>
-                    <li><i class="fas fa-user text-primary me-2"></i>Custom Rules: <span id="customRules">-</span></li>
-                    <li><i class="fas fa-check text-success me-2"></i>Active Rules: <span id="activeRules">-</span></li>
-                  </ul>
+                <button class="btn btn-primary" id="executeQueryBtn">
+                  <i class="fas fa-play me-1"></i>Execute Query
+                </button>
+              </div>
+              
+              <div class="sample-queries mt-3" style="display: none;">
+                <div class="list-group">
+                  <button class="list-group-item list-group-item-action sample-query">SELECT * FROM rules ORDER BY priority DESC, id ASC</button>
+                  <button class="list-group-item list-group-item-action sample-query">SELECT rule_type, COUNT(*) as count FROM rules GROUP BY rule_type</button>
+                  <button class="list-group-item list-group-item-action sample-query">SELECT COUNT(*) as cnt, is_active, is_builtin FROM rules GROUP BY is_active, is_builtin</button>
+                  <button class="list-group-item list-group-item-action sample-query">SELECT * FROM rules WHERE rule_type = 'keyword' AND is_active = 1</button>
+                  <button class="list-group-item list-group-item-action sample-query">SELECT * FROM messages ORDER BY timestamp DESC LIMIT 10</button>
+                  <button class="list-group-item list-group-item-action sample-query">SELECT * FROM uploads</button>
+                  <button class="list-group-item list-group-item-action sample-query">SELECT session_id, COUNT(*) as msg_count FROM messages GROUP BY session_id ORDER BY msg_count DESC</button>
+                  <button class="list-group-item list-group-item-action sample-query">SELECT * FROM sessions ORDER BY last_activity DESC</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0" id="queryResultsTitle">
+                <i class="fas fa-table me-2"></i>Query Results
+              </h5>
+              <div id="resultCount"></div>
+            </div>
+            <div class="card-body">
+              <div id="queryResults">
+                <div class="alert alert-info">
+                  <i class="fas fa-info-circle me-2"></i>Execute a query to see results here.
                 </div>
               </div>
             </div>
@@ -62,133 +269,276 @@
         </div>
       </div>
     </div>
-
-    <div class="col-md-6">
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5 class="mb-0">
-            <i class="fas fa-filter me-2"></i>Data Query Options
-          </h5>
-        </div>
-        <div class="card-body">
-          <div class="mb-3">
-            <label class="form-label">Rule Types</label>
-            <div class="d-flex flex-wrap gap-2">
-              <button class="btn btn-sm btn-outline-primary query-preset" data-sql="SELECT * FROM rules ORDER BY priority DESC, id ASC">
-                All Rules
-              </button>
-              <button class="btn btn-sm btn-outline-primary query-preset" data-sql="SELECT * FROM rules WHERE rule_type = 'keyword'">
-                Keyword Rules
-              </button>
-              <button class="btn btn-sm btn-outline-primary query-preset" data-sql="SELECT * FROM rules WHERE rule_type = 'regex'">
-                Regex Rules
-              </button>
-              <button class="btn btn-sm btn-outline-primary query-preset" data-sql="SELECT * FROM rules WHERE rule_type = 'function'">
-                Function Rules
-              </button>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Rule Attributes</label>
-            <div class="d-flex flex-wrap gap-2">
-              <button class="btn btn-sm btn-outline-success query-preset" data-sql="SELECT * FROM rules WHERE is_builtin = 1">
-                Built-in Rules
-              </button>
-              <button class="btn btn-sm btn-outline-success query-preset" data-sql="SELECT * FROM rules WHERE is_builtin = 0">
-                Custom Rules
-              </button>
-              <button class="btn btn-sm btn-outline-success query-preset" data-sql="SELECT * FROM rules WHERE is_active = 1">
-                Active Rules
-              </button>
-              <button class="btn btn-sm btn-outline-success query-preset" data-sql="SELECT * FROM rules WHERE is_active = 0">
-                Disabled Rules
-              </button>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Other Data</label>
-            <div class="d-flex flex-wrap gap-2">
-              <button class="btn btn-sm btn-outline-info query-preset" data-sql="SELECT * FROM messages ORDER BY timestamp DESC LIMIT 20">
-                Recent Messages
-              </button>
-              <button class="btn btn-sm btn-outline-info query-preset" data-sql="SELECT * FROM sessions ORDER BY last_activity DESC">
-                Session List
-              </button>
-              <button class="btn btn-sm btn-outline-info query-preset" data-sql="SELECT * FROM uploads ORDER BY upload_time DESC">
-                Uploaded Files
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 
-  <div class="row">
-    <div class="col-12">
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5 class="mb-0">
-            <i class="fas fa-terminal me-2"></i>SQL Query Tool
-          </h5>
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- CodeMirror JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/sql/sql.min.js"></script>
+  <script>
+    // Initialize CodeMirror
+    const sqlEditor = CodeMirror.fromTextArea(document.getElementById('sqlQuery'), {
+      mode: 'text/x-sql',
+      theme: 'dracula',
+      lineNumbers: true,
+      lineWrapping: true,
+      indentWithTabs: false,
+      tabSize: 2,
+      extraKeys: {
+        'Ctrl-Enter': executeQuery,
+        'Cmd-Enter': executeQuery
+      }
+    });
+    
+    // Set initial SQL query
+    sqlEditor.setValue('SELECT * FROM rules ORDER BY priority DESC, id ASC');
+    
+    // DOM Elements
+    const executeQueryBtn = document.getElementById('executeQueryBtn');
+    const loadSampleQueriesBtn = document.getElementById('loadSampleQueriesBtn');
+    const sampleQueriesDiv = document.querySelector('.sample-queries');
+    const sampleQueries = document.querySelectorAll('.sample-query');
+    const queryResultsDiv = document.getElementById('queryResults');
+    const resultCountDiv = document.getElementById('resultCount');
+    const refreshStatsBtn = document.getElementById('refreshStats');
+    const queryPresetBtns = document.querySelectorAll('.query-preset');
+    
+    // Load database statistics
+    async function loadDatabaseStats() {
+      try {
+        // Rule stats
+        const ruleResponse = await fetch('/api/rules/stats');
+        const ruleData = await ruleResponse.json();
+        
+        if (ruleData.stats) {
+          const stats = ruleData.stats;
+          document.getElementById('totalRules').textContent = stats.total;
+          document.getElementById('activeRules').textContent = stats.active_count;
+          document.getElementById('customRules').textContent = stats.custom_count;
+          document.getElementById('builtinRules').textContent = stats.builtin_count;
+          document.getElementById('keywordRules').textContent = stats.keyword_count;
+          document.getElementById('regexRules').textContent = stats.regex_count;
+          document.getElementById('functionRules').textContent = stats.function_count;
+        }
+        
+        // Additional stats (using custom SQL queries)
+        await executeStatQuery("SELECT COUNT(*) as count FROM sessions", 'totalSessions');
+        await executeStatQuery("SELECT COUNT(*) as count FROM messages", 'totalMessages');
+      } catch (error) {
+        console.error('Error loading database stats:', error);
+        showToast('Error', 'Filed to load database', 'danger');
+      }
+    }
+    
+    // Execute SQL query for stats
+    async function executeStatQuery(sql, targetElementId) {
+      try {
+        const response = await fetch('/api/db/query', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ sql })
+        });
+        
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+          document.getElementById(targetElementId).textContent = data.results[0].count;
+        }
+      } catch (error) {
+        console.error(`Error executing stat query for ${targetElementId}:`, error);
+      }
+    }
+    
+    // Execute SQL query
+    async function executeQuery() {
+      const sql = sqlEditor.getValue().trim();
+      
+      if (!sql) {
+        showToast('Warning', 'Please type in SQL queries', 'warning');
+        return;
+      }
+      
+      // Show loading indicator
+      queryResultsDiv.innerHTML = `
+        <div class="text-center py-5">
+          <div class="loading mx-auto"></div>
+          <p class="mt-3 text-muted">Querying...</p>
         </div>
-        <div class="card-body">
-          <div class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle me-2"></i>This tool is for testing purposes only and is only available in debug mode. Only SELECT queries are allowed.
-          </div>
-
-          <div class="mb-3">
-            <label for="sqlQuery" class="form-label">SQL Query</label>
-            <textarea id="sqlQuery" class="form-control"></textarea>
-          </div>
-
-          <div class="d-flex justify-content-between">
-            <div>
-              <button class="btn btn-secondary" id="loadSampleQueriesBtn">
-                <i class="fas fa-list me-1"></i>Sample Queries
-              </button>
+      `;
+      resultCountDiv.innerHTML = '';
+      
+      try {
+        const response = await fetch('/api/db/query', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ sql })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          queryResultsDiv.innerHTML = `
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle me-2"></i>${data.error}
             </div>
-            <button class="btn btn-primary" id="executeQueryBtn">
-              <i class="fas fa-play me-1"></i>Execute Query
-            </button>
+          `;
+          resultCountDiv.innerHTML = '';
+        } else if (data.results) {
+          displayQueryResults(data.results);
+        }
+      } catch (error) {
+        console.error('Error executing query:', error);
+        queryResultsDiv.innerHTML = `
+          <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>Failed to query ${error.message}
           </div>
-
-          <div class="sample-queries mt-3" style="display: none;">
-            <div class="list-group">
-              <button class="list-group-item list-group-item-action sample-query">SELECT * FROM rules ORDER BY priority DESC, id ASC</button>
-              <button class="list-group-item list-group-item-action sample-query">SELECT rule_type, COUNT(*) as count FROM rules GROUP BY rule_type</button>
-              <button class="list-group-item list-group-item-action sample-query">SELECT COUNT(*) as cnt, is_active, is_builtin FROM rules GROUP BY is_active, is_builtin</button>
-              <button class="list-group-item list-group-item-action sample-query">SELECT * FROM rules WHERE rule_type = 'keyword' AND is_active = 1</button>
-              <button class="list-group-item list-group-item-action sample-query">SELECT * FROM messages ORDER BY timestamp DESC LIMIT 10</button>
-              <button class="list-group-item list-group-item-action sample-query">SELECT * FROM uploads</button>
-              <button class="list-group-item list-group-item-action sample-query">SELECT session_id, COUNT(*) as msg_count FROM messages GROUP BY session_id ORDER BY msg_count DESC</button>
-              <button class="list-group-item list-group-item-action sample-query">SELECT * FROM sessions ORDER BY last_activity DESC</button>
-            </div>
+        `;
+        resultCountDiv.innerHTML = '';
+      }
+    }
+    
+    // Display query results as table
+    function displayQueryResults(results) {
+      if (!results || results.length === 0) {
+        queryResultsDiv.innerHTML = `
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>No result found for the query.
           </div>
+        `;
+        resultCountDiv.innerHTML = '';
+        return;
+      }
+      
+      // Get all column names
+      const columns = new Set();
+      results.forEach(row => {
+        Object.keys(row).forEach(key => columns.add(key));
+      });
+      
+      // Create table
+      let tableHtml = `
+        <div class="result-table">
+          <table class="table table-striped table-bordered table-hover">
+            <thead class="table-light">
+              <tr>
+                ${Array.from(columns).map(col => `<th>${col}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      // Add rows
+      results.forEach(row => {
+        tableHtml += '<tr>';
+        Array.from(columns).forEach(col => {
+          let value = row[col];
+          
+          // Format value based on type
+          if (value === null) {
+            value = '<em class="text-muted">null</em>';
+          } else if (typeof value === 'boolean') {
+            value = value ? 
+              '<span class="badge bg-success">True</span>' : 
+              '<span class="badge bg-secondary">False</span>';
+          } else if (col === 'is_active' || col === 'is_builtin') {
+            value = value === 1 ? 
+              '<span class="badge bg-success">True</span>' : 
+              '<span class="badge bg-secondary">False</span>';
+          }
+          
+          tableHtml += `<td>${value}</td>`;
+        });
+        tableHtml += '</tr>';
+      });
+      
+      tableHtml += `
+            </tbody>
+          </table>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0" id="queryResultsTitle">
-            <i class="fas fa-table me-2"></i>Query Results
-          </h5>
-          <div id="resultCount"></div>
-        </div>
-        <div class="card-body">
-          <div id="queryResults">
-            <div class="alert alert-info">
-              <i class="fas fa-info-circle me-2"></i>Execute a query to view results.
-            </div>
+      `;
+      
+      queryResultsDiv.innerHTML = tableHtml;
+      resultCountDiv.innerHTML = `<div class="result-count">Found ${results.length} results</div>`;
+    }
+    
+    // Event listeners
+    executeQueryBtn.addEventListener('click', executeQuery);
+    
+    // Toggle sample queries
+    loadSampleQueriesBtn.addEventListener('click', () => {
+      sampleQueriesDiv.style.display = sampleQueriesDiv.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    // Load sample query
+    sampleQueries.forEach(query => {
+      query.addEventListener('click', () => {
+        sqlEditor.setValue(query.textContent.trim());
+        sampleQueriesDiv.style.display = 'none';
+      });
+    });
+    
+    // Query preset buttons
+    queryPresetBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sql = btn.getAttribute('data-sql');
+        sqlEditor.setValue(sql);
+        executeQuery();
+      });
+    });
+    
+    // Refresh stats
+    refreshStatsBtn.addEventListener('click', loadDatabaseStats);
+    
+    // Toast notification function
+    function showToast(title, message, type = 'info') {
+      // Check if toast container exists, if not create it
+      let toastContainer = document.querySelector('.toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+      }
+      
+      // Create toast element
+      const toastId = `toast-${Date.now()}`;
+      const toast = document.createElement('div');
+      toast.className = `toast align-items-center text-white bg-${type} border-0`;
+      toast.id = toastId;
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'assertive');
+      toast.setAttribute('aria-atomic', 'true');
+      
+      // Set toast content
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            <strong>${title}:</strong> ${message}
           </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
+      `;
+      
+      // Add toast to container
+      toastContainer.appendChild(toast);
+      
+      // Initialize and show toast
+      const toastInstance = new bootstrap.Toast(toast);
+      toastInstance.show();
+      
+      // Remove toast from DOM after it's hidden
+      toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+      });
+    }
+    
+    // Initial page load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDatabaseStats();
+      
+      // Auto-execute first query
+      executeQuery();
+    });
+  </script>
+</body>
+</html>
